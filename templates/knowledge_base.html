@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}知识库 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '知识库', 'url': url_for('knowledge_base')}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>公司知识库</h1>
+            {% if has_permission('manage_knowledge') %}
+            <div class="page-actions">
+                <a href="{{ url_for('create_knowledge_article') }}" class="btn-primary">发布文章</a>
+                <a href="{{ url_for('create_knowledge_category') }}" class="btn-secondary">添加分类</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="knowledge-container">
+            <!-- 知识分类 -->
+            <div class="knowledge-categories">
+                <h3>知识分类</h3>
+                {% if categories %}
+                    <div class="categories-list">
+                        {% for category in categories %}
+                        <div class="category-item-wrapper">
+                            <a href="{{ url_for('knowledge_category', category_id=category.id) }}" class="category-item">
+                                <div class="category-icon">📁</div>
+                                <div class="category-info">
+                                    <h4>{{ category.name }}</h4>
+                                    {% if category.description %}
+                                    <p>{{ category.description }}</p>
+                                    {% endif %}
+                                    <span class="article-count">{{ category.articles|length }} 篇文章</span>
+                                </div>
+                            </a>
+                            
+                            <!-- 添加管理按钮（仅管理员和超级管理员可见） -->
+                            {% if has_permission('manage_knowledge') or current_user.has_role('super_admin') %}
+                            <div class="category-actions">
+                                <a href="{{ url_for('edit_knowledge_category', category_id=category.id) }}" class="btn-edit">
+                                    <i class="fas fa-edit"></i> 编辑
+                                </a>
+                                <form action="{{ url_for('delete_knowledge_category', category_id=category.id) }}" method="POST" class="delete-form">
+                                    <button type="submit" class="btn-delete" onclick="return confirm('确定要删除这个分类吗？分类下的所有文章也将被删除。')">
+                                        <i class="fas fa-trash"></i> 删除
+                                    </button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="no-data">
+                        <p>暂无知识分类</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- 最新文章 -->
+            <div class="recent-articles">
+                <h3>最新文章</h3>
+                {% if recent_articles %}
+                    <div class="articles-list">
+                        {% for article in recent_articles %}
+                        <a href="{{ url_for('knowledge_article', article_id=article.id) }}" class="article-item">
+                            <div class="article-title">{{ article.title }}</div>
+                            <div class="article-meta">
+                                <span class="author">{{ article.author.username }}</span>
+                                <span class="publish-time">{{ format_local_time(article.publish_time) }}</span>
+                                <span class="view-count">👁 {{ article.view_count }}</span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="no-data">
+                        <p>暂无知识文章</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

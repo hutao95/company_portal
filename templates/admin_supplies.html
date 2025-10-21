@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}管理所有耗材 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '耗材管理', 'url': url_for('supplies_list')},
+        {'name': '管理所有耗材', 'url': '#'}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>管理所有耗材</h1>
+            <div class="page-actions">
+                <a href="{{ url_for('create_supply') }}" class="btn-primary">添加新耗材</a>
+                <a href="{{ url_for('supplies_list') }}" class="btn-secondary">返回耗材列表</a>
+            </div>
+        </div>
+
+        <div class="admin-supplies-table">
+            {% if supplies %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>名称</th>
+                        <th>分类</th>
+                        <th>当前库存</th>
+                        <th>总库存</th>
+                        <th>单位</th>
+                        <th>最低库存</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for supply in supplies %}
+                    <tr>
+                        <td>{{ supply.id }}</td>
+                        <td>{{ supply.name }}</td>
+                        <td>{% if supply.category %}{{ supply.category.name }}{% else %}未分类{% endif %}</td>
+                        <td>
+                            <span class="stock {% if supply.current_stock <= supply.min_stock_threshold %}low-stock{% endif %}">
+                                {{ supply.current_stock }}
+                            </span>
+                        </td>
+                        <td>{{ supply.total_stock }}</td>
+                        <td>{{ supply.unit }}</td>
+                        <td>{{ supply.min_stock_threshold }}</td>
+                        <td>
+                            {% if supply.is_available %}
+                                <span class="status-badge status-available">可用</span>
+                            {% else %}
+                                <span class="status-badge status-unavailable">不可用</span>
+                            {% endif %}
+                        </td>
+                        <td class="actions">
+                            <a href="{{ url_for('edit_supply', supply_id=supply.id) }}" class="btn-action">编辑</a>
+                            {% if supply.is_available %}
+                            <form action="{{ url_for('disable_supply', supply_id=supply.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn-action btn-disable" onclick="return confirm('确定要停用这个耗材吗？')">停用</button>
+                            </form>
+                            {% else %}
+                            <form action="{{ url_for('enable_supply', supply_id=supply.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn-action btn-enable" onclick="return confirm('确定要启用这个耗材吗？')">启用</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-data">
+                <p>暂无耗材信息</p>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.name }} - 知识库 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '知识库', 'url': url_for('knowledge_base')},
+        {'name': category.name, 'url': '#'}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>{{ category.name }}</h1>
+            {% if category.description %}
+            <p class="category-description">{{ category.description }}</p>
+            {% endif %}
+            <div class="page-actions">
+                {% if has_permission('manage_knowledge') %}
+                <a href="{{ url_for('create_knowledge_article') }}" class="btn-primary">发布文章</a>
+                {% endif %}
+                <a href="{{ url_for('knowledge_base') }}" class="btn-secondary">返回知识库</a>
+            </div>
+        </div>
+
+        {% if category.subcategories %}
+        <div class="subcategories-section">
+            <h3>子分类</h3>
+            <div class="subcategories-grid">
+                {% for subcategory in category.subcategories %}
+                <div class="subcategory-card-wrapper">
+                    <a href="{{ url_for('knowledge_category', category_id=subcategory.id) }}" class="subcategory-card">
+                        <div class="subcategory-icon">📂</div>
+                        <div class="subcategory-info">
+                            <h4>{{ subcategory.name }}</h4>
+                            {% if subcategory.description %}
+                            <p>{{ subcategory.description }}</p>
+                            {% endif %}
+                            <span class="article-count">{{ subcategory.articles|length }} 篇文章</span>
+                        </div>
+                    </a>
+                    
+                    <!-- 子分类管理按钮 -->
+                    {% if has_permission('manage_knowledge') or current_user.has_role('super_admin') %}
+                    <div class="category-actions">
+                        <a href="{{ url_for('edit_knowledge_category', category_id=subcategory.id) }}" class="btn-edit">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form action="{{ url_for('delete_knowledge_category', category_id=subcategory.id) }}" method="POST" class="delete-form">
+                            <button type="submit" class="btn-delete" onclick="return confirm('确定要删除这个子分类吗？')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="articles-section">
+            <h3>文章列表</h3>
+            {% if articles %}
+                <div class="articles-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>标题</th>
+                                <th>作者</th>
+                                <th>发布时间</th>
+                                <th>阅读量</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for article in articles %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('knowledge_article', article_id=article.id) }}" class="article-title-link">
+                                        {{ article.title }}
+                                    </a>
+                                    {% if article.tags %}
+                                    <div class="article-tags-small">
+                                        {% for tag in article.tags.split(',') %}
+                                        <span class="tag-small">{{ tag.strip() }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </td>
+                                <td>{{ article.author.username }}</td>
+                                <td>{{ format_local_time(article.publish_time) }}</td>
+                                <td>{{ article.view_count }}</td>
+                                <td>
+                                    <a href="{{ url_for('knowledge_article', article_id=article.id) }}" class="btn-action">查看</a>
+                                    {% if has_permission('manage_knowledge') or current_user.has_role('super_admin') or article.author_id == current_user.id %}
+                                    <a href="{{ url_for('edit_knowledge_article', article_id=article.id) }}" class="btn-action" style="background: #3498db;">编辑</a>
+                                    {% endif %}
+                                    {% if has_permission('manage_knowledge') or current_user.has_role('super_admin') %}
+                                    <form action="{{ url_for('delete_knowledge_article', article_id=article.id) }}" method="POST" style="display: inline;">
+                                        <button type="submit" class="btn-action" style="background: #e74c3c;" onclick="return confirm('确定要删除这篇文章吗？')">删除</button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="no-data">
+                    <p>此分类下暂无文章</p>
+                    {% if has_permission('manage_knowledge') %}
+                    <a href="{{ url_for('create_knowledge_article') }}" class="btn-primary">发布第一篇文章</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}

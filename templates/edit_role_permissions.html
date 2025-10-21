@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}编辑角色权限 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '权限管理', 'url': url_for('admin_permissions')},
+        {'name': '编辑角色权限', 'url': '#'}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>编辑角色权限: {{ role_name }}</h1>
+            <div class="page-actions">
+                <a href="{{ url_for('admin_permissions') }}" class="btn-cancel">返回权限管理</a>
+            </div>
+        </div>
+
+        <!-- 角色信息 -->
+        <div class="role-info-card">
+            <h3>角色信息</h3>
+            <div class="role-details">
+                <div class="detail-item">
+                    <strong>角色名称:</strong> {{ role_name }}
+                </div>
+                <div class="detail-item">
+                    <strong>角色描述:</strong> {{ get_role_description(role_name) }}
+                </div>
+                <div class="detail-item">
+                    <strong>当前权限数量:</strong> 
+                    <span class="permission-count" id="currentPermissionCount">
+                        {{ role.permissions.split(',')|length if role.permissions else 0 }}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <strong>角色层级:</strong> {{ role.level }}
+                </div>
+            </div>
+        </div>
+
+        <!-- 快速操作 -->
+        <div class="quick-actions">
+            <h3>快速操作</h3>
+            <div class="action-buttons">
+                <button type="button" class="btn-select-all" onclick="selectAllPermissions()">全选所有权限</button>
+                <button type="button" class="btn-deselect-all" onclick="deselectAllPermissions()">清空所有权限</button>
+                <button type="button" class="btn-super-admin" onclick="selectSuperAdminPermissions()">设置为超级管理员权限</button>
+                <button type="button" class="btn-reset-default" onclick="resetToDefaultPermissions()">重置为默认权限</button>
+            </div>
+        </div>
+
+        <!-- 权限编辑表单 -->
+        <div class="form-container">
+            <form method="POST" id="permissionsForm">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    <label>选择权限 <span id="selectedCount">(已选择 0 个权限)</span></label>
+                    <div class="permissions-editor">
+                        {% for value, label in form.permissions.choices %}
+                            {% if value == '---separator---' %}
+                                <!-- 模块标题 -->
+                                <div class="permission-module-header">
+                                    <h4>{{ label|replace('--- ', '')|replace(' ---', '') }}</h4>
+                                    <div class="module-actions">
+                                        <button type="button" class="btn-module-select" onclick="selectModulePermissions(this)">全选此模块</button>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <!-- 权限选项 -->
+                                <div class="permission-option">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="permissions" value="{{ value }}" 
+                                            {% if value in form.permissions.data %}checked{% endif %}
+                                            class="permission-checkbox">
+                                        <span class="checkbox-text">
+                                            <strong>{{ label }}</strong>
+                                            <small class="permission-code">{{ value }}</small>
+                                        </span>
+                                    </label>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% for error in form.permissions.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-actions">
+                    {{ form.submit(class="btn-primary", id="submitBtn") }}
+                    <a href="{{ url_for('admin_permissions') }}" class="btn-cancel">取消</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- 当前权限预览 -->
+        <div class="current-permissions">
+            <h3>当前权限预览</h3>
+            {% if role.permissions %}
+            <div class="permissions-preview">
+                {% for permission in role.permissions.split(',') %}
+                <span class="permission-tag">{{ get_permission_description(permission) }}</span>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="no-permissions">此角色暂无任何权限</p>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+<script>
+// 全选所有权限
+function selectAllPermissions() {
+    const checkboxes = document.querySelectorAll('.permission-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+    });
+    updatePermissionCount();
+}
+
+// 清空所有权限
+function deselectAllPermissions() {
+    const checkboxes = document.querySelectorAll('.permission-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    updatePermissionCount();
+}
+
+// 设置为超级管理员权限（全选）
+function selectSuperAdminPermissions() {
+    selectAllPermissions();
+    alert('已设置为超级管理员权限（所有权限已全选）');
+}
+
+// 重置为默认权限
+function resetToDefaultPermissions() {
+    if (confirm('确定要重置为默认权限吗？这将清除当前所有选择并恢复默认设置。')) {
+        window.location.href = "{{ url_for('reset_role_permissions', role_name=role_name) }}";
+    }
+}
+
+// 选择整个模块的权限
+function selectModulePermissions(button) {
+    const moduleHeader = button.closest('.permission-module-header');
+    let currentElement = moduleHeader.nextElementSibling;
+    
+    while (currentElement && !currentElement.classList.contains('permission-module-header')) {
+        if (currentElement.classList.contains('permission-option')) {
+            const checkbox = currentElement.querySelector('.permission-checkbox');
+            if (checkbox) {
+                checkbox.checked = true;
+            }
+        }
+        currentElement = currentElement.nextElementSibling;
+        if (!currentElement) break;
+    }
+    updatePermissionCount();
+}
+
+// 更新权限计数显示
+function updatePermissionCount() {
+    const checkboxes = document.querySelectorAll('.permission-checkbox:checked');
+    const countElement = document.getElementById('selectedCount');
+    const currentCountElement = document.getElementById('currentPermissionCount');
+    
+    if (countElement) {
+        countElement.textContent = `(已选择 ${checkboxes.length} 个权限)`;
+    }
+    if (currentCountElement) {
+        currentCountElement.textContent = checkboxes.length;
+    }
+}
+
+// 初始化权限计数
+document.addEventListener('DOMContentLoaded', function() {
+    updatePermissionCount();
+    
+    // 为每个复选框添加事件监听器
+    const checkboxes = document.querySelectorAll('.permission-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updatePermissionCount);
+    });
+});
+
+// 表单提交前的验证
+document.getElementById('permissionsForm').addEventListener('submit', function(e) {
+    const checkboxes = document.querySelectorAll('.permission-checkbox:checked');
+    
+    // 显示提交状态
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = '保存中...';
+});
+</script>
+{% endblock %}

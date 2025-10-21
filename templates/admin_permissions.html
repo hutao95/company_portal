@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}权限管理 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '权限管理', 'url': url_for('admin_permissions')}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>系统权限管理</h1>
+            <div class="page-actions">
+                <a href="{{ url_for('admin_users') }}" class="btn-secondary">用户管理</a>
+                <a href="{{ url_for('admin_permissions') }}" class="btn-primary">权限概览</a>
+            </div>
+        </div>
+
+        <!-- 权限概览说明 -->
+        <div class="permission-overview">
+            <div class="info-card">
+                <h3>📋 权限管理说明</h3>
+                <p>此页面展示了系统中所有角色的权限分配情况。权限按照功能模块进行分组，便于管理员清晰地了解每个角色拥有的操作权限。</p>
+            </div>
+        </div>
+
+        <!-- 角色权限矩阵 -->
+        <div class="permission-matrix">
+            <h2>角色权限矩阵</h2>
+            
+            {% for module, permissions in permission_modules.items() %}
+            <div class="permission-module">
+                <h3 class="module-title">{{ module }}</h3>
+                <div class="permission-table-container">
+                    <table class="permission-table">
+                        <thead>
+                            <tr>
+                                <th width="25%">权限功能</th>
+                                {% for role in roles %}
+                                <th width="{{ 75 / roles|length }}%">
+                                    <div class="role-header">
+                                        <strong>{{ role.name }}</strong>
+                                        <small>{{ get_role_description(role.name) }}</small>
+                                    </div>
+                                </th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for permission in permissions %}
+                            <tr>
+                                <td class="permission-info">
+                                    <div class="permission-name">{{ permission }}</div>
+                                    <div class="permission-desc">{{ get_permission_description(permission) }}</div>
+                                </td>
+                                {% for role in roles %}
+                                <td class="permission-cell {% if permission in role.permissions.split(',') %}has-permission{% else %}no-permission{% endif %}">
+                                    {% if permission in role.permissions.split(',') %}
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    <span class="permission-status">有权限</span>
+                                    {% else %}
+                                    <i class="fas fa-times-circle text-muted"></i>
+                                    <span class="permission-status">无权限</span>
+                                    {% endif %}
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- 角色详情 -->
+        <div class="roles-detail">
+            <h2>角色详细信息</h2>
+            <div class="roles-grid">
+                {% for role in roles %}
+                <div class="role-card {% if role.name == 'super_admin' %}role-super-admin{% endif %}">
+                    <div class="role-header">
+                        <h3>
+                            {{ role.name }}
+                            {% if role.name == 'super_admin' %}
+                            <span class="super-admin-badge">超级管理员</span>
+                            {% endif %}
+                        </h3>
+                        <span class="role-level">层级: {{ role.level }}</span>
+                    </div>
+                    <p class="role-description">{{ get_role_description(role.name) }}</p>
+                    
+                    <div class="permissions-count">
+                        <span class="count-badge">
+                            {{ role.permissions.split(',')|length if role.permissions else 0 }} 个权限
+                        </span>
+                    </div>
+                    
+                    <!-- 添加编辑按钮 -->
+                    <div class="role-actions">
+                        <a href="{{ url_for('edit_role_permissions', role_name=role.name) }}" 
+                        class="btn-action" style="background: #3498db;">编辑权限</a>
+                        <form action="{{ url_for('reset_role_permissions', role_name=role.name) }}" 
+                            method="POST" style="display: inline;">
+                            <button type="submit" class="btn-action" 
+                                    style="background: #f39c12;"
+                                    onclick="return confirm('确定要重置 {{ role.name }} 的权限为默认值吗？')">
+                                重置权限
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="permissions-list">
+                        <h4>拥有的权限：</h4>
+                        {% if role.permissions %}
+                            <div class="permissions-tags">
+                                {% for permission in role.permissions.split(',') %}
+                                <span class="permission-tag" title="{{ get_permission_description(permission) }}">
+                                    {{ get_permission_description(permission) }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="no-permissions">此角色暂无任何权限</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

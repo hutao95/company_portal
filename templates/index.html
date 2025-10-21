@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}河南卓远检测有限公司内网{% endblock %}
+
+{% block breadcrumb %}
+    <!-- 首页不需要面包屑导航 -->
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <!-- 欢迎横幅 -->
+        <section class="welcome-banner">
+            <div class="banner-content">
+                <h1 class="banner-title">欢迎使用河南卓远检测有限公司协同办公平台</h1>
+                <p class="banner-subtitle">一站式访问所有工作资源和工具</p>
+            </div>
+        </section>
+
+        <div class="home-layout">
+            <!-- 左侧内容区域 -->
+            <div class="home-left">
+                <!-- 快速入口 -->
+                <section class="quick-links">
+                    <h2>快速入口</h2>
+                    <div class="links-grid">
+                        {% for link in get_quick_links() %}
+                        <a href="{{ link.url }}" class="link-card">
+                            <span class="icon">{{ link.icon }}</span>
+                            <span class="name">{{ link.name }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <!-- 通知公告 -->
+                <section class="notifications">
+                    <h2>最新通知</h2>
+                    <div class="notification-list">
+                        {% for notice in notifications %}
+                        <a href="{{ url_for('notification_detail', notification_id=notice.id) }}" class="notification-link">
+                            <div class="notification-item {% if notice.is_top %}top-notification{% endif %}">
+                                {% if notice.is_top %}
+                                <div class="top-indicator">置顶</div>
+                                {% endif %}
+                                <div class="notice-content">
+                                    <div class="notice-title">{{ notice.title }}</div>
+                                    <div class="notice-meta">
+                                        <span class="publisher">{{ notice.publisher.username }}</span>
+                                        <span class="date">{{ format_local_time(notice.publish_time) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    <div class="view-all">
+                        <a href="{{ url_for('notifications_list') }}">查看全部通知</a>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 右侧待办事项悬浮区域 -->
+            <div class="home-right">
+                <section class="todo-sidebar">
+                    <h2>我的待办</h2>
+                    <div class="todo-list">
+                        <!-- 待审批申请 -->
+                        {% if current_user.has_permission('approve_requests') %}
+                        <a href="{{ url_for('request_list') }}" class="todo-item">
+                            <div class="todo-icon">📋</div>
+                            <div class="todo-content">
+                                <div class="todo-title">待审批申请</div>
+                                <div class="todo-count">{{ pending_requests_count }} 个</div>
+                            </div>
+                        </a>
+                        {% endif %}
+
+                        <!-- 未读消息 -->
+                        <a href="{{ url_for('messages_list') }}" class="todo-item">
+                            <div class="todo-icon">📢</div>
+                            <div class="todo-content">
+                                <div class="todo-title">未读消息</div>
+                                <div class="todo-count">{{ unread_messages_count }} 条</div>
+                            </div>
+                        </a>
+
+                        <!-- 库存告警 -->
+                        <a href="{{ url_for('supplies_list') }}" class="todo-item">
+                            <div class="todo-icon">⚠️</div>
+                            <div class="todo-content">
+                                <div class="todo-title">库存告警</div>
+                                <div class="todo-count">{{ low_stock_count }} 个</div>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

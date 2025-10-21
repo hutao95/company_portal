@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}发布通知 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '通知公告', 'url': url_for('notifications_list')},
+        {'name': '发布通知', 'url': '#'}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>发布通知</h1>
+            <a href="{{ url_for('notifications_list') }}" class="btn-secondary">返回通知列表</a>
+        </div>
+
+        <div class="form-container">
+            <form method="POST" class="notification-form">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    {{ form.title.label }}
+                    {{ form.title(class="form-control", placeholder="请输入通知标题") }}
+                    {% if form.title.errors %}
+                        {% for error in form.title.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.content.label }}
+                    {{ form.content(class="form-control", rows="8", placeholder="请输入通知内容") }}
+                    {% if form.content.errors %}
+                        {% for error in form.content.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.department.label }}
+                        {{ form.department(class="form-control") }}
+                    </div>
+                    
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-label">
+                            {{ form.is_top() }} {{ form.is_top.label.text }}
+                        </label>
+                        <small class="checkbox-help">勾选后此通知将显示在列表顶部</small>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    {{ form.submit(class="btn-primary") }}
+                    <a href="{{ url_for('notifications_list') }}" class="btn-cancel">取消</a>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}

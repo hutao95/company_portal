@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}{{ notification.title }} - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '通知公告', 'url': url_for('notifications_list')},
+        {'name': notification.title, 'url': '#'}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>{{ notification.title }}</h1>
+            {% if notification.is_top %}
+            <span class="top-badge" style="background: #f39c12; color: white; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">置顶</span>
+            {% endif %}
+        </div>
+
+        <div class="notification-meta" style="background: #f8f9fa; padding: 1rem; border-radius: 6px; margin-bottom: 2rem;">
+            <p><strong>发布者：</strong>{{ notification.publisher.username }}</p>
+            <p><strong>部门：</strong>{{ notification.department or '全公司' }}</p>
+            <p><strong>发布时间：</strong>{{ format_local_time(notification.publish_time) }}</p>
+        </div>
+
+        <div class="notification-content" style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid #e1e8ed; line-height: 1.8; white-space: pre-line;">
+            {{ notification.content }}
+        </div>
+
+        <div class="form-actions" style="margin-top: 2rem;">
+            <a href="{{ url_for('notifications_list') }}" class="btn-secondary">返回通知列表</a>
+            {% if current_user.id == notification.publisher_id or current_user.has_role('admin') %}
+            <a href="{{ url_for('edit_notification', notification_id=notification.id) }}" class="btn-primary">编辑通知</a>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}申请列表 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '流程审批', 'url': url_for('request_list')}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>申请列表</h1>
+            {% if has_permission('request_supplies') %}
+            <a href="{{ url_for('supply_request') }}" class="btn-primary">申领耗材</a>
+            {% endif %}
+        </div>
+
+        <div class="requests-table">
+            {% if requests %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>耗材名称</th>
+                        <th>申请人</th>
+                        <th>部门</th>
+                        <th>数量</th>
+                        <th>状态</th>
+                        <th>申请时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in requests %}
+                    <tr>
+                        <td>{{ req.id }}</td>
+                        <td>{{ req.supply.name }}</td>
+                        <td>{{ req.applicant.username }}</td>
+                        <td>{{ req.applicant.department }}</td>
+                        <td>{{ req.quantity }}{{ req.supply.unit }}</td>
+                        <td>
+                            <span class="status-badge status-{{ req.status }}">
+                                {% if req.status == 'pending' %}待审批
+                                {% elif req.status == 'approved' %}已批准
+                                {% elif req.status == 'rejected' %}已拒绝
+                                {% elif req.status == 'issued' %}已发放
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>{{ format_local_time(req.apply_time) }}</td>
+                        <td class="actions">
+                            {% if req.status == 'pending' and has_permission('approve_requests') %}
+                                {% if current_user.has_role('admin') or req.applicant.department == current_user.department %}
+                                <a href="{{ url_for('approve_request', request_id=req.id) }}" class="btn-action">审批</a>
+                                {% endif %}
+                            {% endif %}
+                            
+                            {% if req.status == 'approved' and has_permission('issue_supplies') %}
+                            <form action="{{ url_for('issue_request', request_id=req.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn-action">发放</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-data">
+                <p>暂无申请记录</p>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}

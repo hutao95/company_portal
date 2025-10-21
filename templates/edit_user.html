@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}编辑用户 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '用户管理', 'url': url_for('admin_users')},
+        {'name': '编辑用户', 'url': '#'}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>编辑用户</h1>
+            <a href="{{ url_for('admin_users') }}" class="btn-cancel">返回列表</a>
+        </div>
+
+        <div class="form-container">
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    {{ form.username.label }}
+                    {{ form.username(class="form-control") }}
+                    {% for error in form.username.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.real_name.label }}
+                    {{ form.real_name(class="form-control") }}
+                    {% for error in form.real_name.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.email.label }}
+                    {{ form.email(class="form-control") }}
+                    {% for error in form.email.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.phone.label }}
+                    {{ form.phone(class="form-control") }}
+                    {% for error in form.phone.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.department.label }}
+                    {{ form.department(class="form-control") }}
+                    {% for error in form.department.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.status.label }}
+                    {{ form.status(class="form-control") }}
+                    {% for error in form.status.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-actions">
+                    {{ form.submit(class="btn-primary") }}
+                    <a href="{{ url_for('admin_users') }}" class="btn-cancel">取消</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- 用户信息概览 -->
+        <div class="detail-card" style="margin-top: 2rem;">
+            <h3>用户信息概览</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <strong>用户名：</strong> {{ user.username }}
+                </div>
+                <div class="detail-item">
+                    <strong>注册时间：</strong> {{ format_local_time(user.created_at) }}
+                </div>
+                <div class="detail-item">
+                    <strong>最后登录：</strong> 
+                    {% if user.last_login %}
+                        {{ format_local_time(user.last_login) }}
+                    {% else %}
+                        从未登录
+                    {% endif %}
+                </div>
+                <div class="detail-item">
+                    <strong>当前角色：</strong>
+                    {% for role in user.roles %}
+                        <span class="tag" style="background: #3498db; color: white; padding: 0.2rem 0.5rem; border-radius: 3px; font-size: 0.8rem; margin-right: 0.5rem;">{{ role.name }}</span>
+                    {% else %}
+                        无角色
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}分配角色 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '用户管理', 'url': url_for('admin_users')},
+        {'name': '分配角色', 'url': '#'}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>为用户 {{ user.username }} 分配角色</h1>
+            <a href="{{ url_for('admin_users') }}" class="btn-cancel">返回列表</a>
+        </div>
+
+        <div class="form-container">
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    <label>选择角色</label>
+                    <div class="roles-checkbox-group">
+                        {% for value, label in form.roles.choices %}
+                        <div class="checkbox-item">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="roles" value="{{ value }}" 
+                                       {% if value in form.roles.data %}checked{% endif %}>
+                                <span class="checkbox-text">
+                                    <strong>{{ label }}</strong>
+                                    {% set role = namespace(desc='') %}
+                                    {% for r in all_roles if r.id == value %}
+                                        {% set role.desc = r.description %}
+                                    {% endfor %}
+                                    {% if role.desc %}
+                                        <small class="role-description">{{ role.desc }}</small>
+                                    {% endif %}
+                                </span>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% for error in form.roles.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-actions">
+                    {{ form.submit(class="btn-primary") }}
+                    <a href="{{ url_for('admin_users') }}" class="btn-cancel">取消</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- 当前角色信息 -->
+        <div class="detail-card" style="margin-top: 2rem;">
+            <h3>当前角色</h3>
+            {% if user.roles %}
+            <div class="roles-list">
+                {% for role in user.roles %}
+                <div class="role-item">
+                    <div class="role-header">
+                        <h4>{{ role.name }}</h4>
+                        <span class="role-level">层级: {{ role.level }}</span>
+                    </div>
+                    <p class="role-description">{{ role.description }}</p>
+                    {% if role.permissions %}
+                    <div class="role-permissions">
+                        <strong>权限详情：</strong>
+                        <div class="permissions-detail">
+                            {% if role.permissions %}
+                                {% for permission in role.permissions.split(',') %}
+                                <div class="permission-item">
+                                    <span class="permission-name">{{ permission }}</span>
+                                    <span class="permission-desc">{{ get_permission_description(permission) }}</span>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="no-permissions">此角色暂无任何权限</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p>该用户暂无任何角色</p>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+<style>
+.roles-checkbox-group {
+    border: 1px solid #e1e8ed;
+    border-radius: 8px;
+    padding: 1rem;
+    background: #f8f9fa;
+}
+
+.checkbox-item {
+    padding: 0.8rem;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.checkbox-item:last-child {
+    border-bottom: none;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.checkbox-label input[type="checkbox"] {
+    margin-right: 0.8rem;
+    margin-top: 0.2rem;
+}
+
+.checkbox-text {
+    flex: 1;
+}
+
+.role-description {
+    display: block;
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    margin-top: 0.2rem;
+}
+
+.role-item {
+    background: white;
+    border: 1px solid #e1e8ed;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.role-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.role-header h4 {
+    margin: 0;
+    color: #2c3e50;
+}
+
+.role-level {
+    background: #ecf0f1;
+    color: #7f8c8d;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.role-permissions {
+    margin-top: 0.8rem;
+}
+
+.permissions-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 0.5rem;
+}
+
+.permission-tag {
+    background: #ecf0f1;
+    color: #2c3e50;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.7rem;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block title %}我的消息 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '我的消息', 'url': url_for('messages_list')}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>我的消息 {% if unread_count > 0 %}<span class="unread-badge">{{ unread_count }}</span>{% endif %}</h1>
+            <div class="page-actions">
+                <a href="{{ url_for('send_message') }}" class="btn-primary">发送消息</a>
+            </div>
+        </div>
+
+        <!-- 消息分类筛选 -->
+        <div class="message-filters">
+            <a href="{{ url_for('messages_list') }}" class="filter-btn {% if request.args.get('filter', 'all') == 'all' %}active{% endif %}">全部消息</a>
+            <a href="{{ url_for('messages_list', filter='personal') }}" class="filter-btn {% if request.args.get('filter') == 'personal' %}active{% endif %}">个人消息</a>
+            <a href="{{ url_for('messages_list', filter='notification') }}" class="filter-btn {% if request.args.get('filter') == 'notification' %}active{% endif %}">系统通知</a>
+            <a href="{{ url_for('messages_list', filter='unread') }}" class="filter-btn {% if request.args.get('filter') == 'unread' %}active{% endif %}">未读消息</a>
+        </div>
+
+        <div class="messages-container">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="message-item {% if not message.is_read %}unread{% endif %} {% if message.category == 'notification' %}notification-message{% else %}personal-message{% endif %}" data-message-id="{{ message.id }}">
+                    <div class="message-header">
+                        <h3 class="message-title">
+                            {% if not message.is_read %}<span class="unread-dot">●</span>{% endif %}
+                            {{ message.title }}
+                            {% if message.category == 'notification' %}
+                            <span class="message-tag notification-tag">公告</span>
+                            {% endif %}
+                        </h3>
+                        <span class="message-time">{{ format_local_time(message.created_at) }}</span>
+                    </div>
+                    
+                    <div class="message-content">
+                        <p>{{ message.content }}</p>
+                    </div>
+                    
+                    <div class="message-meta">
+                        <span class="message-sender">
+                            {% if message.category == 'notification' %}
+                                发布者: {{ message.sender.real_name or message.sender.username }}
+                            {% else %}
+                                发件人: {{ message.sender.real_name or message.sender.username }}
+                            {% endif %}
+                        </span>
+                        <span class="message-type type-{{ message.message_type }}">
+                            {% if message.message_type == 'approval' %}审批通知
+                            {% elif message.message_type == 'system' %}系统消息
+                            {% elif message.message_type == 'department' %}部门通知
+                            {% elif message.message_type == 'announcement' %}公告通知
+                            {% else %}{{ message.message_type }}{% endif %}
+                        </span>
+                        {% if message.category == 'notification' and message.target_department %}
+                        <span class="message-department">范围: {{ message.target_department or '全公司' }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="message-actions">
+                        {% if message.related_url %}
+                        <a href="{{ message.related_url }}" class="btn-action">查看详情</a>
+                        {% else %}
+                        <a href="{{ url_for('message_detail', message_id=message.id) }}" class="btn-action">查看详情</a>
+                        {% endif %}
+                        {% if not message.is_read and message.id %}
+                        <button type="button" class="btn-action mark-read-btn" data-message-id="{{ message.id }}">标记已读</button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-messages">
+                    <p>暂无消息</p>
+                    {% if has_permission('send_messages') %}
+                    <a href="{{ url_for('send_message') }}" class="btn-primary">发送第一条消息</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+<style>
+/* 消息分类筛选 */
+.message-filters {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 0.5rem 1rem;
+    background: #f8f9fa;
+    border: 1px solid #e1e8ed;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+    background: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+/* 消息类型标签 */
+.message-tag {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+
+.notification-tag {
+    background: #e74c3c;
+    color: white;
+}
+
+/* 不同类型的消息样式 */
+.notification-message {
+    border-left: 4px solid #e74c3c;
+    background: #fff5f5;
+}
+
+.personal-message {
+    border-left: 4px solid #3498db;
+}
+
+.message-meta {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    flex-wrap: wrap;
+}
+
+.message-sender {
+    font-weight: 500;
+}
+
+.message-department {
+    background: #ecf0f1;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+}
+</style>
+
+<script>
+// 标记已读功能
+function markAsRead(messageId) {
+    console.log('Marking message as read:', messageId);
+    
+    // 验证 messageId
+    if (!messageId || messageId === 'None' || messageId === 'null') {
+        console.error('Invalid message ID:', messageId);
+        alert('消息ID无效');
+        return;
+    }
+    
+    fetch('{{ url_for("mark_message_read", message_id=0) }}'.replace('0', messageId), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Mark read response:', data);
+        if (data.success) {
+            // 找到对应的消息元素
+            const messageElement = document.querySelector(`.message-item[data-message-id="${messageId}"]`);
+            if (messageElement) {
+                // 移除未读样式
+                messageElement.classList.remove('unread');
+                
+                // 移除未读圆点
+                const unreadDot = messageElement.querySelector('.unread-dot');
+                if (unreadDot) {
+                    unreadDot.remove();
+                }
+                
+                // 移除标记已读按钮
+                const markReadButton = messageElement.querySelector('.mark-read-btn');
+                if (markReadButton) {
+                    markReadButton.remove();
+                }
+                
+                // 更新未读消息计数
+                updateUnreadCount();
+            }
+        } else {
+            alert('标记已读失败：' + (data.error || '未知错误'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('标记已读失败，请重试');
+    });
+}
+
+// 更新未读消息计数
+function updateUnreadCount() {
+    // 重新计算页面上的未读消息数量
+    const unreadMessages = document.querySelectorAll('.message-item.unread');
+    const unreadCount = unreadMessages.length;
+    
+    // 更新页面标题中的未读计数
+    const unreadBadge = document.querySelector('.unread-badge');
+    if (unreadCount > 0) {
+        if (unreadBadge) {
+            unreadBadge.textContent = unreadCount;
+        } else {
+            // 如果没有徽章但需要显示，可以在这里创建
+            const pageHeader = document.querySelector('.page-header h1');
+            if (pageHeader) {
+                const newBadge = document.createElement('span');
+                newBadge.className = 'unread-badge';
+                newBadge.textContent = unreadCount;
+                pageHeader.appendChild(newBadge);
+            }
+        }
+    } else {
+        if (unreadBadge) {
+            unreadBadge.remove();
+        }
+    }
+    
+    // 同时更新导航栏的未读计数
+    updateNavUnreadCount();
+}
+
+// 更新导航栏未读计数
+function updateNavUnreadCount() {
+    // 调用API获取最新的未读消息计数
+    fetch('{{ url_for("unread_messages_count") }}')
+        .then(response => response.json())
+        .then(data => {
+            const navBadge = document.querySelector('.notification-badge');
+            const messagesLink = document.querySelector('.messages-link');
+            
+            if (data.count > 0) {
+                if (navBadge) {
+                    navBadge.textContent = data.count;
+                } else {
+                    // 创建导航栏徽章
+                    if (messagesLink) {
+                        const newBadge = document.createElement('span');
+                        newBadge.className = 'notification-badge';
+                        newBadge.textContent = data.count;
+                        messagesLink.appendChild(newBadge);
+                    }
+                }
+                // 确保有闪烁类
+                messagesLink.classList.add('has-unread');
+            } else {
+                // 移除导航栏徽章
+                if (navBadge) {
+                    navBadge.remove();
+                }
+                // 移除闪烁类
+                messagesLink.classList.remove('has-unread');
+            }
+        })
+        .catch(error => console.error('Error updating nav count:', error));
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    // 使用事件委托处理标记已读按钮点击
+    document.addEventListener('click', function(event) {
+        if (event.target.classList.contains('mark-read-btn')) {
+            const messageId = event.target.getAttribute('data-message-id');
+            markAsRead(messageId);
+        }
+    });
+});
+</script>
+{% endblock %}

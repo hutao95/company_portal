@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}档案查询 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '档案查询', 'url': url_for('archives_list')}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>档案查询</h1>
+        </div>
+
+        <div class="archives-container">
+            <div class="feature-cards">
+                <a href="{{ url_for('employees_list') }}" class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>人员档案</h3>
+                    <p>查询和管理员工基本信息、工作经历等</p>
+                </a>
+                
+                <div class="feature-card coming-soon">
+                    <div class="feature-icon">📊</div>
+                    <h3>绩效档案</h3>
+                    <p>员工绩效考核记录（开发中）</p>
+                </div>
+                
+                <div class="feature-card coming-soon">
+                    <div class="feature-icon">🎓</div>
+                    <h3>培训档案</h3>
+                    <p>员工培训记录（开发中）</p>
+                </div>
+                
+                <div class="feature-card coming-soon">
+                    <div class="feature-icon">📝</div>
+                    <h3>合同档案</h3>
+                    <p>员工合同管理（开发中）</p>
+                </div>
+            </div>
+            
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <h4>总员工数</h4>
+                    <p class="stat-number">{{ total_employees }}</p>
+                </div>
+                <div class="stat-card">
+                    <h4>在职员工</h4>
+                    <p class="stat-number">{{ active_employees }}</p>
+                </div>
+                <div class="stat-card">
+                    <h4>部门数量</h4>
+                    <p class="stat-number">{{ department_count }}</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

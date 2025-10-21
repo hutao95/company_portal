@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}耗材分类管理 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '耗材管理', 'url': url_for('supplies_list')},
+        {'name': '分类管理', 'url': '#'}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>耗材分类管理</h1>
+            <div class="page-actions">
+                <a href="{{ url_for('create_supply_category') }}" class="btn-primary">添加分类</a>
+                <a href="{{ url_for('supplies_list') }}" class="btn-secondary">返回耗材列表</a>
+            </div>
+        </div>
+
+        <div class="admin-table">
+            {% if categories %}
+            <table>
+                <thead>
+                    <tr>
+                        <th width="25%">分类名称</th>
+                        <th width="45%">分类描述</th>
+                        <th width="15%">耗材数量</th>
+                        <th width="15%">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr>
+                        <td>{{ category.name }}</td>
+                        <td>{{ category.description or '无描述' }}</td>
+                        <td>{{ category.supplies|length }}</td>
+                        <td class="actions">
+                            <div class="action-buttons">
+                                <a href="{{ url_for('edit_supply_category', category_id=category.id) }}" class="btn-action btn-edit">编辑</a>
+                                <form action="{{ url_for('delete_supply_category', category_id=category.id) }}" method="POST" class="delete-form">
+                                    <button type="submit" class="btn-action btn-delete" onclick="return confirm('确定要删除这个分类吗？')">删除</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-data">
+                <p>暂无耗材分类</p>
+                <a href="{{ url_for('create_supply_category') }}" class="btn-primary">添加第一个分类</a>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}

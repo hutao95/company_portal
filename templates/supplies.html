@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}耗材管理 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '耗材管理', 'url': url_for('supplies_list')}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>耗材管理</h1>
+            <div class="page-actions">
+                {% if has_permission('request_supplies') %}
+                <a href="{{ url_for('supply_request') }}" class="btn-primary">申领耗材</a>
+                {% endif %}
+                
+                <!-- 修改权限检查：超级管理员和管理员都可以看到管理链接 -->
+                {% if has_permission('manage_supplies') or current_user.has_role('super_admin') %}
+                <a href="{{ url_for('supply_inbound') }}" class="btn-primary" style="background: #27ae60;">入库耗材</a>
+                <a href="{{ url_for('supply_categories') }}" class="btn-secondary">分类管理</a>
+                <a href="{{ url_for('admin_supplies') }}" class="btn-secondary">管理所有耗材</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="supplies-grid">
+            {% for supply in supplies %}
+            <div class="supply-card">
+                <h3>{{ supply.name }}</h3>
+                <div class="supply-info">
+                    <p>分类：{% if supply.category %}{{ supply.category.name }}{% else %}未分类{% endif %}</p>
+                    <p>当前库存：<span class="stock {% if supply.current_stock <= supply.min_stock_threshold %}low-stock{% endif %}">
+                        {{ supply.current_stock }} {{ supply.unit }}
+                    </span></p>
+                    <p>最低库存：{{ supply.min_stock_threshold }} {{ supply.unit }}</p>
+                    <p>总入库量：{{ supply.total_stock }} {{ supply.unit }}</p>
+                </div>
+                {% if has_permission('request_supplies') and supply.is_available and supply.current_stock > 0 %}
+                <a href="{{ url_for('supply_request') }}" class="btn-request">申领</a>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="no-data">
+                <p>暂无耗材信息</p>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</div>
+{% endblock %}

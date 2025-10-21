@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}用户管理 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '用户管理', 'url': url_for('admin_users')}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>用户管理</h1>
+            <div class="page-actions">
+                <a href="{{ url_for('create_user') }}" class="btn-primary">创建用户</a>
+                {% if has_permission('manage_roles') %}
+                <a href="{{ url_for('admin_permissions') }}" class="btn-secondary" style="background: #9b59b6;">权限管理</a>
+                {% endif %}
+                <a href="{{ url_for('admin_users', status='pending') }}" class="btn-secondary">待审核用户</a>
+                <a href="{{ url_for('admin_users', status='active') }}" class="btn-secondary">已激活用户</a>
+                <a href="{{ url_for('admin_users') }}" class="btn-secondary">全部用户</a>
+            </div>
+        </div>
+
+        <!-- 状态筛选 -->
+        <div class="search-form">
+            <div class="status-filters">
+                <a href="{{ url_for('admin_users') }}" class="status-filter {% if status_filter == 'all' %}active{% endif %}">全部</a>
+                <a href="{{ url_for('admin_users', status='pending') }}" class="status-filter {% if status_filter == 'pending' %}active{% endif %}">待审核 ({{ users|selectattr('status', 'equalto', 'pending')|list|length }})</a>
+                <a href="{{ url_for('admin_users', status='active') }}" class="status-filter {% if status_filter == 'active' %}active{% endif %}">已激活 ({{ users|selectattr('status', 'equalto', 'active')|list|length }})</a>
+                <a href="{{ url_for('admin_users', status='inactive') }}" class="status-filter {% if status_filter == 'inactive' %}active{% endif %}">已停用 ({{ users|selectattr('status', 'equalto', 'inactive')|list|length }})</a>
+            </div>
+        </div>
+
+        <!-- 用户列表 -->
+        <div class="admin-users-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>用户名</th>
+                        <th>真实姓名</th>
+                        <th>部门</th>
+                        <th>邮箱</th>
+                        <th>状态</th>
+                        <th>注册时间</th>
+                        <th>最后登录</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.real_name or '未设置' }}</td>
+                        <td>{{ user.department }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <span class="status-badge status-{{ user.status }}">
+                                {% if user.status == 'pending' %}待审核
+                                {% elif user.status == 'active' %}已激活
+                                {% elif user.status == 'inactive' %}已停用
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>{{ format_local_time(user.created_at) }}</td>
+                        <td>
+                            {% if user.last_login %}
+                                {{ format_local_time(user.last_login) }}
+                            {% else %}
+                                从未登录
+                            {% endif %}
+                        </td>
+                        <td class="actions">
+                            {% if user.status == 'pending' %}
+                                <form action="{{ url_for('approve_user', user_id=user.id) }}" method="POST" style="display: inline;">
+                                    <button type="submit" class="btn-action btn-enable" onclick="return confirm('确定要通过该用户吗？')">通过</button>
+                                </form>
+                                <form action="{{ url_for('reject_user', user_id=user.id) }}" method="POST" style="display: inline;">
+                                    <button type="submit" class="btn-action btn-disable" onclick="return confirm('确定要拒绝该用户吗？')">拒绝</button>
+                                </form>
+                            {% endif %}
+                            
+                            <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn-action">编辑</a>
+                            
+                            {% if has_permission('manage_roles') %}
+                            <a href="{{ url_for('user_roles', user_id=user.id) }}" class="btn-action" style="background: #9b59b6;">角色</a>
+                            {% endif %}
+                            
+                            {% if has_permission('reset_passwords') %}
+                            <a href="{{ url_for('reset_user_password', user_id=user.id) }}" class="btn-action" style="background: #f39c12;">重置密码</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 2rem;">
+                            <p>暂无用户数据</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<style>
+.status-filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.status-filter {
+    padding: 0.5rem 1rem;
+    background: #f8f9fa;
+    border: 1px solid #e1e8ed;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.status-filter:hover,
+.status-filter.active {
+    background: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+.admin-users-table {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.admin-users-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-users-table th,
+.admin-users-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.admin-users-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.admin-users-table tr:hover {
+    background: #f8f9fa;
+}
+
+.status-pending {
+    background: #f39c12;
+}
+
+.status-active {
+    background: #27ae60;
+}
+
+.status-inactive {
+    background: #95a5a6;
+}
+
+.actions {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+}
+
+.btn-action {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.3s ease;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.btn-action:hover {
+    background: #2980b9;
+}
+
+.btn-enable {
+    background: #27ae60;
+}
+
+.btn-enable:hover {
+    background: #219a52;
+}
+
+.btn-disable {
+    background: #e74c3c;
+}
+
+.btn-disable:hover {
+    background: #c0392b;
+}
+</style>
+{% endblock %}

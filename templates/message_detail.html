@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}{{ message.title }} - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '我的消息', 'url': url_for('messages_list')},
+        {'name': '消息详情', 'url': '#'}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>{{ message.title }}</h1>
+            <div class="page-actions">
+                <a href="{{ url_for('messages_list') }}" class="btn-cancel">返回列表</a>
+                {% if not message.is_read %}
+                <form action="{{ url_for('mark_message_read', message_id=message.id) }}" method="POST" style="display: inline;">
+                    <button type="submit" class="btn-primary">标记已读</button>
+                </form>
+                {% endif %}
+                <form action="{{ url_for('delete_message', message_id=message.id) }}" method="POST" style="display: inline;">
+                    <button type="submit" class="btn-cancel" onclick="return confirm('确定要删除这条消息吗？')">删除</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="message-detail">
+            <div class="message-meta-header">
+                <div class="message-type-badge type-{{ message.message_type }}">
+                    {% if message.message_type == 'approval' %}审批通知
+                    {% elif message.message_type == 'system' %}系统消息
+                    {% elif message.message_type == 'department' %}部门通知
+                    {% elif message.message_type == 'reminder' %}提醒通知
+                    {% else %}{{ message.message_type }}{% endif %}
+                </div>
+                <div class="message-info">
+                    {% if message.sender %}
+                    <span><strong>发送人:</strong> {{ message.sender.username }}</span>
+                    {% endif %}
+                    <span><strong>接收时间:</strong> {{ format_local_time(message.created_at) }}</span>
+                    <span><strong>状态:</strong> {% if message.is_read %}已读{% else %}未读{% endif %}</span>
+                </div>
+            </div>
+
+            <div class="message-content">
+                {{ message.content|replace('\n', '<br>')|safe }}
+            </div>
+
+            {% if message.related_url %}
+            <div class="message-actions-bottom">
+                <a href="{{ message.related_url }}" class="btn-primary">查看相关页面</a>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+{% endblock %}

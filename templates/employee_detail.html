@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}{{ employee.name }} - 人员档案 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '档案查询', 'url': url_for('archives_list')},
+        {'name': '人员档案', 'url': url_for('employees_list')},
+        {'name': employee.name, 'url': '#'}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>{{ employee.name }} 的详细信息</h1>
+            <div class="page-actions">
+                {% if has_permission('manage_employees') %}
+                <a href="{{ url_for('edit_employee', employee_id=employee.id) }}" class="btn-primary">编辑信息</a>
+                {% endif %}
+                <a href="{{ url_for('employees_list') }}" class="btn-secondary">返回列表</a>
+            </div>
+        </div>
+
+        <div class="employee-detail">
+            <div class="detail-card">
+                <h3>基本信息</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <strong>工号:</strong> {{ employee.employee_id }}
+                    </div>
+                    <div class="detail-item">
+                        <strong>姓名:</strong> {{ employee.name }}
+                    </div>
+                    <div class="detail-item">
+                        <strong>部门:</strong> {{ employee.department }}
+                    </div>
+                    <div class="detail-item">
+                        <strong>职位:</strong> {{ employee.position }}
+                    </div>
+                    <div class="detail-item">
+                        <strong>邮箱:</strong> {{ employee.email or '未填写' }}
+                    </div>
+                    <div class="detail-item">
+                        <strong>电话:</strong> {{ employee.phone or '未填写' }}
+                    </div>
+                    <div class="detail-item">
+                        <strong>入职日期:</strong> {{ employee.hire_date }}
+                    </div>
+                    <div class="detail-item">
+                        <strong>状态:</strong> 
+                        <span class="status-badge status-{{ employee.status }}">
+                            {{ employee.status }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 档案文件部分 -->
+            <div class="files-section">
+                <h3>档案文件</h3>
+                {% if files %}
+                    <div class="files-list">
+                        {% for file in files %}
+                        <div class="file-item">
+                            <div class="file-icon">📄</div>
+                            <div class="file-info">
+                                <div class="file-name">{{ file.file_name }}</div>
+                                <div class="file-meta">
+                                    <span class="file-type">{{ file.file_type }}</span>
+                                    <span class="upload-time">上传于: {{ format_local_time(file.upload_time) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="no-data">
+                        <p>暂无档案文件</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

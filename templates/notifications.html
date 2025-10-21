@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}通知公告 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '通知公告', 'url': url_for('notifications_list')}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>通知公告</h1>
+            {% if has_permission('publish_notices') %}
+            <a href="{{ url_for('create_notification') }}" class="btn-primary">发布通知</a>
+            {% endif %}
+        </div>
+
+        <div class="notifications-container">
+            {% if notifications %}
+                {% for notification in notifications %}
+                <div class="notification-item {% if notification.is_top %}notification-top{% endif %}">
+                    <!-- 置顶标识放在右上角 -->
+                    {% if notification.is_top %}
+                    <div class="notification-top-badge">置顶</div>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('notification_detail', notification_id=notification.id) }}" class="notification-link">
+                        <div class="notification-header">
+                            <h3 class="notification-title">{{ notification.title }}</h3>
+                            <div class="notification-meta">
+                                <span class="notification-publisher">发布者：{{ notification.publisher.username }}</span>
+                                <span class="notification-department">部门：{{ notification.department or '全公司' }}</span>
+                                <span class="notification-time">{{ format_local_time(notification.publish_time) }}</span>
+                            </div>
+                        </div>
+                    </a>
+                    
+                    {% if notification.publisher_id == current_user.id or current_user.has_role('super_admin') or current_user.has_role('admin') %}
+                    <div class="notification-actions">
+                        <a href="{{ url_for('edit_notification', notification_id=notification.id) }}" class="btn-edit">
+                            <i class="fas fa-edit"></i> 编辑
+                        </a>
+                        
+                        <form action="{{ url_for('delete_notification', notification_id=notification.id) }}" method="POST" class="delete-form">
+                            <button type="submit" class="btn-delete" onclick="return confirm('确定要删除此通知吗？')">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        </form>
+                    </div>  
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-notifications">
+                    <p>暂无通知公告</p>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}

@@ -1,0 +1,631 @@
+{% extends "base_login.html" %}
+
+{% block content %}
+<div class="login-container register-container">
+    <div class="login-box register-box">
+        <!-- 注册标题 -->
+        <div class="login-header register-header">
+            <h1>用户注册</h1>
+            <p>填写以下信息完成注册</p>
+        </div>
+        
+        <!-- 注册表单 -->
+        <form method="POST" class="login-form register-form" id="registerForm">
+            {{ form.hidden_tag() }}
+            
+            <!-- 表单字段保持不变 -->
+            <div class="form-group with-icon">
+                <i class="fas fa-user input-icon"></i>
+                {{ form.username(class="form-control", placeholder="请输入用户名（3-80位字符）", id="username") }}
+                <div class="validation-message" id="username-message"></div>
+                {% for error in form.username.errors %}
+                    <span class="error">{{ error }}</span>
+                {% endfor %}
+            </div>
+            
+            <div class="form-group with-icon">
+                <i class="fas fa-id-card input-icon"></i>
+                {{ form.real_name(class="form-control", placeholder="请输入真实姓名", id="real_name") }}
+                <div class="validation-message" id="real_name-message"></div>
+                {% for error in form.real_name.errors %}
+                    <span class="error">{{ error }}</span>
+                {% endfor %}
+            </div>
+            
+            <div class="form-group with-icon">
+                <i class="fas fa-envelope input-icon"></i>
+                {{ form.email(class="form-control", placeholder="请输入邮箱地址", id="email") }}
+                <div class="validation-message" id="email-message"></div>
+                {% for error in form.email.errors %}
+                    <span class="error">{{ error }}</span>
+                {% endfor %}
+            </div>
+            
+            <div class="form-group with-icon">
+                <i class="fas fa-phone input-icon"></i>
+                {{ form.phone(class="form-control", placeholder="请输入手机号（可选）", id="phone") }}
+                <div class="validation-message" id="phone-message"></div>
+                {% for error in form.phone.errors %}
+                    <span class="error">{{ error }}</span>
+                {% endfor %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.department.label }}
+                {{ form.department(class="form-control", id="department") }}
+                {% for error in form.department.errors %}
+                    <span class="error">{{ error }}</span>
+                {% endfor %}
+            </div>
+            
+            <div class="form-group with-icon">
+                <i class="fas fa-lock input-icon"></i>
+                {{ form.password(class="form-control", placeholder="请输入密码（至少6位）", id="password") }}
+                <div class="validation-message" id="password-message"></div>
+                {% for error in form.password.errors %}
+                    <span class="error">{{ error }}</span>
+                {% endfor %}
+            </div>
+            
+            <div class="form-group with-icon">
+                <i class="fas fa-lock input-icon"></i>
+                {{ form.confirm_password(class="form-control", placeholder="请再次输入密码", id="confirm_password") }}
+                <div class="validation-message" id="confirm_password-message"></div>
+                {% for error in form.confirm_password.errors %}
+                    <span class="error">{{ error }}</span>
+                {% endfor %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.submit(class="btn-register", id="submit-btn") }}
+            </div>
+            
+            <!-- 注册规则说明 -->
+            <div class="register-rules">
+                <h4>📋 注册规则说明</h4>
+                <ul>
+                    <li>用户名：3-80位字符，支持字母、数字和下划线</li>
+                    <li>真实姓名：必须填写真实姓名，便于管理员审核</li>
+                    <li>邮箱：必须填写有效的工作邮箱地址</li>
+                    <li>手机号：可选，建议填写以便联系</li>
+                    <li>密码：至少6位，建议包含字母和数字</li>
+                    <li>注册后需管理员审核，审核通过后方可登录</li>
+                </ul>
+            </div>
+            
+            <!-- 登录链接 -->
+            <div class="register-footer">
+                <p>已有账号？<a href="{{ url_for('login') }}">立即登录</a></p>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+/* 注册容器样式 - 增加宽度 */
+.register-container {
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+.register-box {
+    background: white;
+    padding: 3rem 3rem;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.register-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.register-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.register-header h1 {
+    color: #2c3e50;
+    margin: 0 0 0.8rem 0;
+    font-size: 2.2rem;
+    font-weight: 700;
+}
+
+.register-header p {
+    color: #7f8c8d;
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 400;
+}
+
+/* 表单样式优化 */
+.register-form {
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 0.6rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.6rem;
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 1.2rem 1.5rem;
+    border: 2px solid #e1e8ed;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    background: #f8f9fa;
+    color: #333;
+    line-height: 1.5;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+    transform: translateY(-1px);
+}
+
+.form-control::placeholder {
+    color: #95a5a6;
+    font-weight: 400;
+}
+
+/* 带图标的输入框 - 修复垂直居中 */
+.form-group.with-icon {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    left: 1.2rem;
+    top: 38%;
+    transform: translateY(-50%);
+    color: #95a5a6;
+    font-size: 1.1rem;
+    z-index: 2;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-group.with-icon .form-control {
+    padding-left: 3.5rem;
+}
+
+.form-group.with-icon .form-control:focus + .input-icon {
+    color: #667eea;
+}
+
+/* 验证消息样式 */
+.validation-message {
+    font-size: 0.85rem;
+    margin-top: 0.3rem; /* 从0.4rem减少到0.3rem */
+    min-height: 1.1rem; /* 从1.2rem减少到1.1rem */
+    line-height: 1.3; /* 从1.4减少到1.3 */
+}
+
+.validation-success {
+    color: #27ae60;
+    font-weight: 500;
+}
+
+.validation-error {
+    color: #e74c3c;
+    font-weight: 500;
+}
+
+.validation-info {
+    color: #3498db;
+    font-weight: 500;
+}
+
+.error {
+    color: #e74c3c;
+    font-size: 0.9rem;
+    margin-top: 0.3rem;
+    display: block;
+    padding-left: 0.2rem;
+}
+
+/* 注册按钮 */
+.btn-register {
+    width: 100%;
+    padding: 1.2rem;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    margin-top: 0.6rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    letter-spacing: 1px;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-register:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-register:active:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.btn-register:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* 注册规则说明 */
+.register-rules {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-top: 2rem;
+    border-left: 4px solid #667eea;
+}
+
+.register-rules h4 {
+    color: #2c3e50;
+    margin: 0 0 1.2rem 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.register-rules ul {
+    color: #5a6c7d;
+    margin: 0;
+    padding-left: 1.5rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.register-rules li {
+    margin-bottom: 0.5rem;
+    position: relative;
+}
+
+.register-rules li:before {
+    content: "•";
+    color: #667eea;
+    font-weight: bold;
+    display: inline-block;
+    width: 1em;
+    margin-left: -1em;
+}
+
+.register-rules li:last-child {
+    margin-bottom: 0;
+}
+
+/* 注册页脚 */
+.register-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid #e1e8ed;
+}
+
+.register-footer p {
+    color: #7f8c8d;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.register-footer a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    padding: 0.3rem 0.5rem;
+    border-radius: 4px;
+}
+
+.register-footer a:hover {
+    color: #2980b9;
+    background: #f8f9fa;
+    text-decoration: none;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .register-container {
+        max-width: 100%;
+        padding: 20px 15px;
+    }
+    
+    .register-box {
+        padding: 2.5rem 2rem;
+        border-radius: 14px;
+    }
+    
+    .register-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .form-group {
+        margin-bottom: 1rem; /* 移动端也相应减少 */
+    }
+    
+    .register-header p {
+        font-size: 1rem;
+    }
+    
+    .form-control {
+        padding: 1.1rem 1.3rem;
+    }
+    
+    .form-group.with-icon .form-control {
+        padding-left: 3.2rem;
+    }
+    
+    .input-icon {
+        left: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .register-container {
+        padding: 15px 10px;
+    }
+    
+    .register-box {
+        padding: 2rem 1.5rem;
+        border-radius: 12px;
+    }
+    
+    .register-header h1 {
+        font-size: 1.6rem;
+    }
+    
+    .register-header p {
+        font-size: 0.95rem;
+    }
+    
+    .form-group {
+        margin-bottom: 0.9rem;
+    }
+
+    .register-rules li {
+        margin-bottom: 0.4rem; /* 小屏幕也相应减少 */
+    }
+    
+    .form-control {
+        padding: 1rem 1.2rem;
+        font-size: 1rem;
+    }
+    
+    .btn-register {
+        padding: 1.1rem;
+        font-size: 1rem;
+    }
+    
+    .register-rules {
+        padding: 1.5rem;
+    }
+    
+    .register-rules ul {
+        font-size: 0.85rem;
+    }
+    
+    .input-icon {
+        left: 1rem;
+        font-size: 1rem;
+    }
+}
+
+/* 小屏幕手机优化 */
+@media (max-width: 360px) {
+    .register-box {
+        padding: 1.5rem 1rem;
+    }
+    
+    .register-header h1 {
+        font-size: 1.4rem;
+    }
+    
+    .form-control {
+        padding: 0.9rem 1rem;
+    }
+}
+</style>
+
+<!-- JavaScript 部分保持不变 -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registerForm');
+    const submitBtn = document.getElementById('submit-btn');
+    const fields = {
+        username: document.getElementById('username'),
+        real_name: document.getElementById('real_name'),
+        email: document.getElementById('email'),
+        phone: document.getElementById('phone'),
+        password: document.getElementById('password'),
+        confirm_password: document.getElementById('confirm_password')
+    };
+
+    // 验证规则
+    const rules = {
+        username: {
+            pattern: /^[a-zA-Z0-9_]{3,80}$/,
+            message: '用户名必须是3-80位的字母、数字或下划线'
+        },
+        real_name: {
+            minLength: 2,
+            message: '真实姓名至少2个字符'
+        },
+        email: {
+            pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+            message: '请输入有效的邮箱地址'
+        },
+        phone: {
+            pattern: /^1[3-9]\d{9}$|^$/,
+            message: '请输入有效的手机号或留空'
+        },
+        password: {
+            minLength: 6,
+            message: '密码至少6位'
+        }
+    };
+
+    // 显示验证消息
+    function showValidationMessage(fieldId, message, type) {
+        const messageEl = document.getElementById(fieldId + '-message');
+        messageEl.textContent = message;
+        messageEl.className = 'validation-message validation-' + type;
+    }
+
+    // 清除验证消息
+    function clearValidationMessage(fieldId) {
+        const messageEl = document.getElementById(fieldId + '-message');
+        messageEl.textContent = '';
+        messageEl.className = 'validation-message';
+    }
+
+    // 验证单个字段
+    function validateField(fieldId, value) {
+        const rule = rules[fieldId];
+        
+        if (!rule) return true;
+        
+        if (fieldId === 'real_name') {
+            if (value.length < rule.minLength) {
+                showValidationMessage(fieldId, rule.message, 'error');
+                return false;
+            }
+        } else if (fieldId === 'password') {
+            if (value.length < rule.minLength) {
+                showValidationMessage(fieldId, rule.message, 'error');
+                return false;
+            } else {
+                showValidationMessage(fieldId, '密码强度：' + (value.length >= 8 ? '强' : '中'), 'info');
+            }
+        } else if (rule.pattern) {
+            if (!rule.pattern.test(value)) {
+                showValidationMessage(fieldId, rule.message, 'error');
+                return false;
+            }
+        }
+        
+        showValidationMessage(fieldId, '✓ 格式正确', 'success');
+        return true;
+    }
+
+    // 验证确认密码
+    function validateConfirmPassword() {
+        const password = fields.password.value;
+        const confirmPassword = fields.confirm_password.value;
+        
+        if (confirmPassword === '') {
+            clearValidationMessage('confirm_password');
+            return false;
+        }
+        
+        if (password !== confirmPassword) {
+            showValidationMessage('confirm_password', '两次输入的密码不一致', 'error');
+            return false;
+        }
+        
+        showValidationMessage('confirm_password', '✓ 密码匹配', 'success');
+        return true;
+    }
+
+    // 检查表单是否有效
+    function checkFormValidity() {
+        let isValid = true;
+        
+        // 检查必填字段
+        for (const fieldId in fields) {
+            if (fieldId === 'phone') continue; // 手机号可选
+            
+            if (!fields[fieldId].value.trim()) {
+                isValid = false;
+                break;
+            }
+        }
+        
+        // 检查字段验证
+        if (isValid) {
+            for (const fieldId in rules) {
+                if (fieldId === 'phone') continue; // 手机号可选
+                
+                if (!validateField(fieldId, fields[fieldId].value)) {
+                    isValid = false;
+                }
+            }
+            
+            // 检查确认密码
+            if (!validateConfirmPassword()) {
+                isValid = false;
+            }
+        }
+        
+        // 更新提交按钮状态
+        submitBtn.disabled = !isValid;
+        return isValid;
+    }
+
+    // 为所有字段添加事件监听
+    for (const fieldId in fields) {
+        fields[fieldId].addEventListener('input', function() {
+            if (fieldId === 'confirm_password') {
+                validateConfirmPassword();
+            } else {
+                validateField(fieldId, this.value);
+            }
+            checkFormValidity();
+        });
+        
+        fields[fieldId].addEventListener('blur', function() {
+            if (fieldId === 'confirm_password') {
+                validateConfirmPassword();
+            } else {
+                validateField(fieldId, this.value);
+            }
+            checkFormValidity();
+        });
+    }
+
+    // 初始检查
+    checkFormValidity();
+
+    // 表单提交前最终验证
+    form.addEventListener('submit', function(e) {
+        if (!checkFormValidity()) {
+            e.preventDefault();
+            showValidationMessage('username', '请检查并修正表单中的错误', 'error');
+        }
+    });
+});
+</script>
+{% endblock %}

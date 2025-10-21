@@ -1,0 +1,17 @@
+<!-- templates/breadcrumb.html -->
+<nav class="breadcrumb" aria-label="面包屑导航">
+    <ul>
+        <li><a href="{{ url_for('index') }}">首页</a></li>
+        {% if breadcrumbs %}
+            {% for breadcrumb in breadcrumbs %}
+                {% if loop.last %}
+                    <li aria-current="page">{{ breadcrumb.name }}</li>
+                {% else %}
+                    <li><a href="{{ breadcrumb.url }}">{{ breadcrumb.name }}</a></li>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <li aria-current="page">{{ current_page or '当前页面' }}</li>
+        {% endif %}
+    </ul>
+</nav>

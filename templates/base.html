@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}公司内网门户{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Favicon 完整设置 -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <!-- 备用PNG格式 -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <!-- Apple设备 -->
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="global-header">
+        <div class="header-container">
+            <a href="{{ url_for('index') }}" class="logo-link">
+                <div class="logo-container">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="河南卓远检测有限公司" class="logo-img">
+                    <div class="logo-text">
+                        <span class="company-name">河南卓远检测有限公司</span>
+                        <span class="divider">|</span>
+                        <span class="portal-name">协同办公平台</span>
+                    </div>
+                </div>
+            </a>
+            <div class="user-info">
+                <div class="user-details">
+                    <i class="fas fa-user-circle user-icon"></i>
+                    <span class="username">{{ current_user.username }}</span>
+                    <span class="user-department">{{ current_user.department }}</span>
+                </div>
+                <div class="user-notifications">
+                    <a href="{{ url_for('messages_list') }}" class="messages-link" title="消息中心">
+                        <i class="fas fa-bell"></i>
+                        {% if current_user.received_messages %}
+                            {% set unread_count = current_user.received_messages|selectattr('is_read', 'equalto', False)|list|length %}
+                            {% if unread_count > 0 %}
+                            <span class="notification-badge">{{ unread_count }}</span>
+                            {% endif %}
+                        {% endif %}
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        退出登录
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 面包屑导航 -->
+    {% block breadcrumb %}
+        {% include 'breadcrumb.html' %}
+    {% endblock %}
+
+    <!-- 闪存消息 -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- 在用户未登录时显示注册链接 -->
+    {% if not current_user.is_authenticated %}
+    <div style="text-align: center; margin: 1rem 0;">
+        <p style="color: #7f8c8d;">
+            新用户？<a href="{{ url_for('register') }}" style="color: #3498db; text-decoration: none; font-weight: 500;">立即注册</a>
+        </p>
+    </div>
+    {% endif %}
+    
+    <!-- 主要内容 -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- 快速返回首页按钮 -->
+    <div class="quick-home">
+        <a href="{{ url_for('index') }}" class="home-btn" title="返回首页">🏠</a>
+    </div>
+
+    <!-- 闪存消息自动隐藏脚本 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 自动隐藏闪存消息
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(function(message) {
+                // 2秒后自动隐藏
+                setTimeout(function() {
+                    message.style.opacity = '0';
+                    setTimeout(function() {
+                        message.style.display = 'none';
+                    }, 500);
+                }, 2000); // 改为2000毫秒（2秒）
+            });
+        });
+
+        // 定期检查新消息
+        function checkNewMessages() {
+            // 检查路由是否存在
+            try {
+                fetch('{{ url_for("unread_messages_count") }}')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        const messagesLink = document.querySelector('.messages-link');
+                        const badge = document.querySelector('.notification-badge');
+                        
+                        if (data.count > 0) {
+                            // 添加闪烁类名
+                            messagesLink.classList.add('has-unread');
+                            
+                            if (badge) {
+                                badge.textContent = data.count;
+                            } else {
+                                // 创建新的徽章
+                                if (messagesLink) {
+                                    const newBadge = document.createElement('span');
+                                    newBadge.className = 'notification-badge';
+                                    newBadge.textContent = data.count;
+                                    messagesLink.appendChild(newBadge);
+                                }
+                            }
+                        } else {
+                            // 移除闪烁类名
+                            messagesLink.classList.remove('has-unread');
+                            
+                            // 移除徽章
+                            if (badge) {
+                                badge.remove();
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking messages:', error);
+                        // 禁用消息检查功能
+                        clearInterval(messageCheckInterval);
+                    });
+            } catch (error) {
+                console.error('Messages route not available:', error);
+                // 禁用消息检查功能
+                clearInterval(messageCheckInterval);
+            }
+        }
+
+        // 只有在有消息权限时才启动消息检查
+        let messageCheckInterval;
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查用户是否有消息权限
+            const messagesLink = document.querySelector('.messages-link');
+            if (messagesLink) {
+                // 每分钟检查一次新消息
+                messageCheckInterval = setInterval(checkNewMessages, 60000);
+                // 页面加载时检查一次
+                checkNewMessages();
+            }
+        });
+    </script>
+</body>
+</html>

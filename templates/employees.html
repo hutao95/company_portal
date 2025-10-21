@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}人员档案 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '档案查询', 'url': url_for('archives_list')},
+        {'name': '人员档案', 'url': url_for('employees_list')}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>人员档案</h1>
+            {% if has_permission('manage_employees') %}
+            <div class="page-actions">
+                <a href="{{ url_for('create_employee') }}" class="btn-primary">添加员工</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 搜索表单 -->
+        <div class="search-form">
+            <form method="GET" class="employee-search-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.keyword.label }}
+                        {{ form.keyword(class="form-control", placeholder="输入姓名、工号或职位") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.department.label }}
+                        {{ form.department(class="form-control") }}
+                    </div>
+                    <div class="form-group" style="align-self: flex-end;">
+                        {{ form.submit(class="btn-primary") }}
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- 员工列表 -->
+        <div class="employees-list">
+            {% if employees %}
+                <div class="employees-table-container">
+                    <table class="employees-table">
+                        <thead>
+                            <tr>
+                                <th>员工信息</th>
+                                <th>部门/职位</th>
+                                <th>联系方式</th>
+                                <th>状态</th>
+                                {% if has_permission('manage_employees') %}
+                                <th>操作</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employee in employees %}
+                            <tr>
+                                <td class="employee-info">
+                                    <div class="employee-avatar">
+                                        {{ employee.name[0] }}
+                                    </div>
+                                    <div class="employee-details">
+                                        <a href="{{ url_for('employee_detail', employee_id=employee.id) }}" class="employee-name">
+                                            {{ employee.name }}
+                                        </a>
+                                        <div class="employee-id">工号: {{ employee.employee_id }}</div>
+                                        <div class="employee-hire-date">入职: {{ employee.hire_date }}</div>
+                                    </div>
+                                </td>
+                                <td class="department-position">
+                                    <div class="department">{{ employee.department }}</div>
+                                    <div class="position">{{ employee.position }}</div>
+                                </td>
+                                <td class="contact-info">
+                                    {% if employee.email %}
+                                    <div class="email">
+                                        <i class="fas fa-envelope"></i>
+                                        {{ employee.email }}
+                                    </div>
+                                    {% endif %}
+                                    {% if employee.phone %}
+                                    <div class="phone">
+                                        <i class="fas fa-phone"></i>
+                                        {{ employee.phone }}
+                                    </div>
+                                    {% endif %}
+                                </td>
+                                <td class="employee-status">
+                                    <span class="status-badge status-{{ employee.status }}">
+                                        {{ employee.status }}
+                                    </span>
+                                </td>
+                                {% if has_permission('manage_employees') %}
+                                <td class="employee-actions">
+                                    <a href="{{ url_for('edit_employee', employee_id=employee.id) }}" class="btn-action">
+                                        <i class="fas fa-edit"></i> 编辑
+                                    </a>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="no-data">
+                    <p>暂无员工信息</p>
+                    {% if has_permission('manage_employees') %}
+                    <a href="{{ url_for('create_employee') }}" class="btn-primary" style="margin-top: 1rem;">添加第一个员工</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}

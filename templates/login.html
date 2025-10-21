@@ -1,0 +1,71 @@
+{% extends "base_login.html" %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-box">
+        <!-- 简洁的登录标题 -->
+        <div class="login-header">
+            <h1>系统登录</h1>
+        </div>
+        
+        <!-- 登录表单 -->
+        <form method="POST" class="login-form">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group with-icon">
+                <i class="fas fa-user input-icon"></i>
+                {{ form.username(class="form-control", placeholder="请输入账号") }}
+                {% for error in form.username.errors %}
+                    <span class="error">{{ error }}</span>
+                {% endfor %}
+            </div>
+            
+            <div class="form-group with-icon">
+                <i class="fas fa-lock input-icon"></i>
+                {{ form.password(class="form-control", placeholder="请输入密码") }}
+                {% for error in form.password.errors %}
+                    <span class="error">{{ error }}</span>
+                {% endfor %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.submit(class="btn-login") }}
+            </div>
+            
+            <!-- 添加注册链接 -->
+            <div class="register-link" style="text-align: center; margin-top: 1.5rem;">
+                <p style="color: #7f8c8d; font-size: 0.9rem; margin: 0;">
+                    没有账号？<a href="{{ url_for('register') }}" style="color: #3498db; text-decoration: none; font-weight: 500;">立即注册</a>
+                </p>
+            </div>
+        </form>
+        
+        <!-- 简洁的测试账号信息 -->
+        <div class="test-accounts">
+            <h3>测试账号</h3>
+            <div class="account-list">
+                <div class="account-item">
+                    <span class="username">superadmin</span>
+                    <span class="password">admin123</span>
+                </div>
+                <div class="account-item">
+                    <span class="username">admin</span>
+                    <span class="password">admin123</span>
+                </div>
+                <div class="account-item">
+                    <span class="username">zhangsan</span>
+                    <span class="password">admin123</span>
+                </div>
+                <div class="account-item">
+                    <span class="username">lisi</span>
+                    <span class="password">admin123</span>
+                </div>
+                <div class="account-item">
+                    <span class="username">wangwu</span>
+                    <span class="password">admin123</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

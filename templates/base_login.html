@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统登录</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+</head>
+<body class="login-page">
+    <!-- 闪存消息 -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <!-- 主要内容 -->
+    {% block content %}{% endblock %}
+
+    <!-- 简洁的版权信息 -->
+    <footer class="login-footer">
+        <p>&copy; 2025 胡涛 版权所有</p>
+    </footer>
+
+    <!-- 闪存消息自动隐藏脚本 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 自动隐藏闪存消息
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(function(message) {
+                // 2秒后自动隐藏
+                setTimeout(function() {
+                    message.style.opacity = '0';
+                    setTimeout(function() {
+                        message.style.display = 'none';
+                    }, 500);
+                }, 2000); // 改为2000毫秒（2秒）
+            });
+        });
+    </script>
+</body>
+</html>

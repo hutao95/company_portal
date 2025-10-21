@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}创建用户 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '用户管理', 'url': url_for('admin_users')},
+        {'name': '创建用户', 'url': '#'}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>创建新用户</h1>
+            <a href="{{ url_for('admin_users') }}" class="btn-cancel">返回列表</a>
+        </div>
+
+        <div class="form-container">
+            <div class="info-message" style="background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 6px; padding: 1rem; margin-bottom: 1.5rem;">
+                <h4 style="color: #0c5460; margin: 0 0 0.5rem 0;">💡 管理员创建用户</h4>
+                <p style="color: #0c5460; margin: 0;">通过此页面创建的用户将直接激活，无需审核。</p>
+            </div>
+
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    {{ form.username.label }}
+                    {{ form.username(class="form-control", placeholder="请输入用户名") }}
+                    {% for error in form.username.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.real_name.label }}
+                    {{ form.real_name(class="form-control", placeholder="请输入真实姓名") }}
+                    {% for error in form.real_name.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.email.label }}
+                    {{ form.email(class="form-control", placeholder="请输入邮箱") }}
+                    {% for error in form.email.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.phone.label }}
+                    {{ form.phone(class="form-control", placeholder="请输入手机号（可选）") }}
+                    {% for error in form.phone.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.department.label }}
+                    {{ form.department(class="form-control") }}
+                    {% for error in form.department.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.password.label }}
+                    {{ form.password(class="form-control", placeholder="请输入初始密码") }}
+                    {% for error in form.password.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                    <small class="form-help">密码长度至少6位，创建后请告知用户及时修改</small>
+                </div>
+                
+                <div class="form-group">
+                    {{ form.confirm_password.label }}
+                    {{ form.confirm_password(class="form-control", placeholder="请确认密码") }}
+                    {% for error in form.confirm_password.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-actions">
+                    {{ form.submit(class="btn-primary") }}
+                    <a href="{{ url_for('admin_users') }}" class="btn-cancel">取消</a>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<style>
+.form-help {
+    color: #7f8c8d;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    display: block;
+}
+</style>
+{% endblock %}

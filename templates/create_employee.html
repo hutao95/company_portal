@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}添加员工 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '档案查询', 'url': url_for('archives_list')},
+        {'name': '人员档案', 'url': url_for('employees_list')},
+        {'name': '添加员工', 'url': '#'}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>添加员工</h1>
+            <div class="page-actions">
+                <a href="{{ url_for('employees_list') }}" class="btn-secondary">返回列表</a>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.employee_id.label }}
+                        {{ form.employee_id(class="form-control", placeholder="请输入员工工号") }}
+                        {% for error in form.employee_id.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.name.label }}
+                        {{ form.name(class="form-control", placeholder="请输入员工姓名") }}
+                        {% for error in form.name.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.department.label }}
+                        {{ form.department(class="form-control") }}
+                        {% for error in form.department.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.position.label }}
+                        {{ form.position(class="form-control", placeholder="请输入职位") }}
+                        {% for error in form.position.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.email.label }}
+                        {{ form.email(class="form-control", placeholder="请输入邮箱") }}
+                        {% for error in form.email.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.phone.label }}
+                        {{ form.phone(class="form-control", placeholder="请输入电话") }}
+                        {% for error in form.phone.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.hire_date.label }}
+                        {{ form.hire_date(class="form-control", placeholder="格式：YYYY-MM-DD") }}
+                        {% for error in form.hire_date.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.status.label }}
+                        {{ form.status(class="form-control") }}
+                        {% for error in form.status.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    {{ form.submit(class="btn-primary") }}
+                    <a href="{{ url_for('employees_list') }}" class="btn-cancel">取消</a>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}

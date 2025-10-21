@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}审批申请 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '流程审批', 'url': url_for('request_list')},
+        {'name': '审批申请', 'url': '#'}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>审批申请</h1>
+            <a href="{{ url_for('request_list') }}" class="btn-secondary">返回申请列表</a>
+        </div>
+
+        <div class="request-details">
+            <h3>申请详情</h3>
+            <p><strong>申请人：</strong>{{ supply_request.applicant.username }}</p>
+            <p><strong>部门：</strong>{{ supply_request.applicant.department }}</p>
+            <p><strong>耗材：</strong>{{ supply_request.supply.name }}</p>
+            <p><strong>数量：</strong>{{ supply_request.quantity }}{{ supply_request.supply.unit }}</p>
+            <p><strong>申请时间：</strong>{{ format_local_time(supply_request.apply_time) }}</p>
+        </div>
+
+        <div class="form-container">
+            <form method="POST" class="approve-form">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    {{ form.action.label }}
+                    {{ form.action(class="form-control") }}
+                </div>
+                
+                <div class="form-group" id="reject-reason-group" style="display: none;">
+                    {{ form.reject_reason.label }}
+                    {{ form.reject_reason(class="form-control", rows="3") }}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.submit(class="btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const actionSelect = document.querySelector('#action');
+    const rejectReasonGroup = document.querySelector('#reject-reason-group');
+    
+    actionSelect.addEventListener('change', function() {
+        if (this.value === 'reject') {
+            rejectReasonGroup.style.display = 'block';
+        } else {
+            rejectReasonGroup.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}

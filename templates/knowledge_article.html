@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.title }} - 知识库 - 公司内网门户{% endblock %}
+
+{% block breadcrumb %}
+    {% set breadcrumbs = [
+        {'name': '知识库', 'url': url_for('knowledge_base')},
+        {'name': article.category.name, 'url': url_for('knowledge_category', category_id=article.category.id)},
+        {'name': article.title, 'url': '#'}
+    ] %}
+    {% include 'breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <main class="main-content">
+        <div class="page-header">
+            <h1>{{ article.title }}</h1>
+            <div class="article-meta-header">
+                <span class="author">作者: {{ article.author.username }}</span>
+                <span class="publish-time">发布时间: {{ format_local_time(article.publish_time) }}</span>
+                <span class="view-count">阅读: {{ article.view_count }}</span>
+            </div>
+        </div>
+
+        <div class="article-content">
+            <div class="article-body">
+                {{ article.content | replace('\n', '<br>') | safe }}
+            </div>
+            
+            {% if article.tags %}
+            <div class="article-tags">
+                <strong>标签:</strong>
+                {% for tag in article.tags.split(',') %}
+                <span class="tag">{{ tag.strip() }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="article-actions">
+            <a href="{{ url_for('knowledge_category', category_id=article.category.id) }}" class="btn-secondary">返回分类</a>
+            <a href="{{ url_for('knowledge_base') }}" class="btn-secondary">返回知识库</a>
+        </div>
+    </main>
+</div>
+{% endblock %}
